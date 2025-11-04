@@ -44,7 +44,7 @@ function RegisterPage() {
          )//end of return
 }
 
-export default RegisterPag
+export default RegisterPage;
 
 
   
