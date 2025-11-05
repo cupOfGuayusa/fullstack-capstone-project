@@ -3,7 +3,7 @@ const app = express();
 const bcrpytjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const {body, validationResult} = require('express-validator');
-const connectToDatabase = require('.../models/db');
+const connectToDatabase = require('../models/db');
 const router = express.Router();
 const dotenv = require('dotenv');
 const pino = require('pino');
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
             firstName: req.body.firstName,
             lastName: req.body.lastName,
             password: hash,
-            createdAt: new Date();
+            createdAt: new Date(),
         });
     
         const payload = {
