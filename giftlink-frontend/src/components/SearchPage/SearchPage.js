@@ -37,7 +37,7 @@ function SearchPage() {
     // Task 2. Fetch search results from the API based on user inputs.
     const handleSearch = async () => {
         const baseUrl = `${urlConfig.backendUrl}/api/search?`;
-        const queryParams = new URLSearchPattern({
+        const queryParams = new URLSearchParams({
             name: searchQuery,
             age_years: ageRange,
             category: document.getElementById('categorySelect').value,
@@ -81,7 +81,7 @@ return (
                             <select id='conditionSelect' className='form-control my-1'>
                                 <option value=''>All</option>
                                 {conditions.map(condition => {
-                                <option key={condition} value={condition}>{condition}</option>
+                                return <option key={condition} value={condition}>{condition}</option>
                                 })};
                             </select>
                             <label htmlFor="ageRange">Less than {ageRange} years</label>
@@ -135,9 +135,6 @@ return (
                     
 
 
-
-                    {/* Task 8: Implement search button with onClick event to trigger search:*/}
-                    {/*Task 5: Display search results and handle empty results with a message. */}
 
 
 export default SearchPage;

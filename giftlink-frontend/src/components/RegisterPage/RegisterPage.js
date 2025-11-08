@@ -30,6 +30,33 @@ function RegisterPage() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         />
+                         <label htmlFor="lastName" className='form label'>Last Name</label>
+                        <input 
+                        id='lastName'
+                        type='text'
+                        className='form-control'
+                        placeholder='Enter your last name'
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        />
+                         <label htmlFor="email" className='form label'>Email</label>
+                        <input 
+                        id='email'
+                        type='text'
+                        className='form-control'
+                        placeholder='Enter your email'
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        /> 
+                        <label htmlFor="password" className='form label'>Password</label>
+                        <input 
+                        id='password'
+                        type='password'
+                        className='form-control'
+                        placeholder='Enter your password'
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                     <button type='submit' onClick={handleRegister} className='btn btn-primary w-100 mb-3'>Register</button>
                         <p className="mt-4 text-center">
