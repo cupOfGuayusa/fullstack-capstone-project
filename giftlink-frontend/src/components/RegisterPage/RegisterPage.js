@@ -50,13 +50,13 @@
                 sessionStorage.setItem('auth-token', json.authtoken);
                 sessionStorage.setItem('name', firstName);
                 sessionStorage.setItem('email', json.email);
-            //Step 2 - Task 3
+            
                 setIsLoggedIn(true);
-            //Step 2 - Task 4
+            
                 navigate('/app');
             }
             if (json.error) {
-            //Step 2 - Task 5
+           
                 setShowerr(json.error);
             }
         }
