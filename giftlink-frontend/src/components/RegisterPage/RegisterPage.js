@@ -37,7 +37,7 @@ function RegisterPage() {
 
     const json = await response.json();
     console.log("json data", json);
-    console.log("er", json.error);
+    console.log("error", json.error);
 
     if (json.authtoken) {
       sessionStorage.setItem("auth-token", json.authtoken);
@@ -61,13 +61,13 @@ function RegisterPage() {
             <h2 className="text-center mb-4 font-weight-bold">Register</h2>
             <div className="mb-3">
               <label htmlFor="firstName" className="form-label">
-                FirstName
+                First Name
               </label>
               <input
                 id="firstName"
                 type="text"
                 className="form-control"
-                placeholder="Enter your firstName"
+                placeholder="Enter your first name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
@@ -75,13 +75,13 @@ function RegisterPage() {
 
             <div className="mb-3">
               <label htmlFor="lastName" className="form-label">
-                LastName
+                Last Name
               </label>
               <input
                 id="lastName"
                 type="text"
                 className="form-control"
-                placeholder="Enter your lastName"
+                placeholder="Enter your last name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
