@@ -18,25 +18,34 @@ const LoginPage = () => {
     }
   }, [navigate]);
 
-  const handleLogin = async () => {
-    try {
-      const response = await fetch(`/api/auth/login`, {
-        method: "POST",
-        header: { "content-type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
-      });
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const res = await fetch(`/api/auth/login`, {
+      method: "POST",
+      header: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
 
-      const json = await response.json();
+    const json = await res.json();
+
+    if (json.authtoken) {
+      const json = await res.json();
       sessionStorage.setItem("auth-token", json.authtoken);
       sessionStorage.setItem("name", json.name);
       sessionStorage.setItem("email", json.email);
       setIsLoggedIn(true);
       navigate("/app");
-      logger.error("");
-    } catch {}
+    } else {
+      document.getElementById("email").value("");
+      document.getElementById("password").value("");
+      setIncorrect("Wrong password.Try again.");
+      setTimeout(() => {
+        setTimeout();
+      }, 2000);
+    }
   };
 
   return (
