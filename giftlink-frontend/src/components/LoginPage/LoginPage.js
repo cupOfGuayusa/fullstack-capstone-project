@@ -20,9 +20,12 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const res = await fetch(`/api/auth/login`, {
+    const res = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
       method: "POST",
-      header: { "content-type": "application/json" },
+      header: {
+        "content-type": "application/json",
+        Authorization: bearerToken ? `Bearer ${bearerToken}` : "",
+      },
       body: JSON.stringify({
         email: email,
         password: password,
@@ -75,9 +78,23 @@ const LoginPage = () => {
                 className="form-control"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setIncorrect("");
+                }}
               />
             </div>
+            <span
+              style={{
+                color: "red",
+                height: ".5cm",
+                display: "block",
+                fontStyle: "italic",
+                fontSize: "12px",
+              }}
+            >
+              {incorrect}
+            </span>
             <button
               className="btn btn-primary w-100 mb-3"
               onClick={handleLogin}
