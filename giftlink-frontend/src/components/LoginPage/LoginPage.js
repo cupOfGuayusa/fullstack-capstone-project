@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [incorrect, setIncorrect] = useState();
+  const [incorrect, setIncorrect] = useState("");
   const navigate = useNavigate();
-  const bearerToken = sessionStorage.getItem("bearer-token");
+  const bearerToken = sessionStorage.getItem("auth-token");
   const { setIsLoggedIn } = useAppContext();
 
   useEffect(() => {
@@ -22,9 +22,9 @@ const LoginPage = () => {
     e.preventDefault();
     const res = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
       method: "POST",
-      header: {
-        "content-type": "application/json",
-        Authorization: bearerToken ? `Bearer ${bearerToken}` : "",
+      headers: {
+        "Content-Type": "application/json",
+        ...(bearerToken ? { Authorization: `Bearer ${bearerToken}` } : {}),
       },
       body: JSON.stringify({
         email: email,
@@ -35,18 +35,17 @@ const LoginPage = () => {
     const json = await res.json();
 
     if (json.authtoken) {
-      const json = await res.json();
       sessionStorage.setItem("auth-token", json.authtoken);
       sessionStorage.setItem("name", json.name);
       sessionStorage.setItem("email", json.email);
       setIsLoggedIn(true);
       navigate("/app");
     } else {
-      document.getElementById("email").value("");
-      document.getElementById("password").value("");
-      setIncorrect("Wrong password.Try again.");
+      setEmail("");
+      setPassword("");
+      setIncorrect("Wrong password. Try again.");
       setTimeout(() => {
-        setTimeout();
+        setIncorrect("");
       }, 2000);
     }
   };
