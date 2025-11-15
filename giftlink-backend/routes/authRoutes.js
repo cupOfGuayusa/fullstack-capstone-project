@@ -51,9 +51,9 @@ router.post("/register", async (req, res) => {
       },
     };
 
-    const authtoken = jwt.sign(payload, JWT_SECRET);
+    const authToken = jwt.sign(payload, JWT_SECRET);
     logger.info(`User registered: ${email}`);
-    res.status(201).json({ authtoken, email });
+    res.status(201).json({ authToken, email });
   } catch (e) {
     logger.error("Register error:", e.message);
     return res
@@ -65,8 +65,10 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   console.log("\n\n Inside login");
   try {
-    //Get email and password from body
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
     logger.info("Starting Login Process...");
 
     //Connect to Database
@@ -117,7 +119,10 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
   } catch (e) {
-    return res.status(500).json("Internal Server Error");
+    logger.error("Login error", e.message);
+    return res
+      .status(500)
+      .json({ error: "Internal Server Error", details: e.message });
   }
 });
 
