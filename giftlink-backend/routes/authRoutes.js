@@ -7,6 +7,7 @@ const connectToDatabase = require("../models/db");
 const router = express.Router();
 const dotenv = require("dotenv");
 const pino = require("pino");
+const { ReturnDocument } = require("mongodb");
 
 const logger = pino();
 dotenv.config();
@@ -123,6 +124,46 @@ router.post("/login", async (req, res) => {
     return res
       .status(500)
       .json({ error: "Internal Server Error", details: e.message });
+  }
+});
+
+router.put("/update", async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    logger.error("Validation errors in update request", errors.array());
+    return res.status(400).json({ errors: errors.array() });
+  }
+  try {
+    const email = req.headers.email;
+    if (!email) {
+      logger.error("Email not found in the headers");
+      return res
+        .status(400)
+        .json({ error: "Email not found in the request header" });
+    }
+
+    const db = connectToDatabase();
+    const collection = db.collection(users);
+    const existingUser = await collection.findOne({ email });
+    const updatedUser = await collection.findOneandUpdate(
+      { email },
+      { $set: existingUser },
+      { ReturnDocument: "after" }
+    );
+
+    existingUser.firstname = req.body.name;
+    existingUser.updatedAt = new Date();
+
+    let payload = {
+      user: {
+        id: updatedUser.toString(),
+      },
+    };
+
+    const authToken = jwt.sign(payload, JWT_SECRET);
+    res.json({ authToken });
+  } catch (e) {
+    return res.status(500).send("Internal Server Error");
   }
 });
 
