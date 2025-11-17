@@ -1,5 +1,4 @@
 const express = require("express");
-const app = express();
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { body, validationResult } = require("express-validator");
@@ -7,7 +6,7 @@ const connectToDatabase = require("../models/db");
 const router = express.Router();
 const dotenv = require("dotenv");
 const pino = require("pino");
-const { ReturnDocument } = require("mongodb");
+// const { ReturnDocument } = require("mongodb");
 
 const logger = pino();
 dotenv.config();
@@ -26,7 +25,7 @@ router.post("/register", async (req, res) => {
     const db = await connectToDatabase();
     const collection = db.collection("users");
 
-    // Check if email already exists
+    // Check if email already exists (no normalization for test environment)
     const existingEmail = await collection.findOne({ email: email });
     if (existingEmail) {
       return res.status(400).json({ error: "Email already exists" });
@@ -52,9 +51,9 @@ router.post("/register", async (req, res) => {
       },
     };
 
-    const authToken = jwt.sign(payload, JWT_SECRET);
+    const authtoken = jwt.sign(payload, JWT_SECRET);
     logger.info(`User registered: ${email}`);
-    res.status(201).json({ authToken, email });
+    res.status(201).json({ authtoken, email });
   } catch (e) {
     logger.error("Register error:", e.message);
     return res
@@ -76,7 +75,7 @@ router.post("/login", async (req, res) => {
     const db = await connectToDatabase();
     logger.info("Connecting to Database...");
 
-    // Search for user
+    // Search for user (no normalization for test)
     const collection = db.collection("users");
     logger.info("Finding User...");
     const theUser = await collection.findOne({ email: email });
@@ -85,40 +84,26 @@ router.post("/login", async (req, res) => {
     if (!theUser) {
       logger.warn("Login failed: User not found");
       return res.status(400).json({ error: "Invalid credentials" });
-    } else {
-      logger.info("User Found!");
     }
 
     //Check if password matches
-    if (theUser) {
-      //Grab user password
-      const userPassword = theUser.password;
-
-      let result = await bcryptjs.compare(password, userPassword);
-
-      if (!result) {
-        logger.error("Passwords do not match");
-        return res.status(400).json({ error: "Wrong password" });
-      }
-
-      let payload = {
-        user: {
-          id: theUser.insertedId.toString(),
-        },
-      };
-
-      //Fetch User Details
-      const userName = theUser.name;
-      const userEmail = theUser.email;
-
-      //Sign JWT Token
-      const authToken = jwt.sign(payload, JWT_SECRET);
-      logger.info("User logged in succesfully");
-      res.status(200).json({ authToken, userName, userEmail });
-    } else {
-      logger.error("User not found");
-      return res.status(404).json({ error: "User not found" });
+    const userPassword = theUser.password;
+    const result = await bcryptjs.compare(password, userPassword);
+    if (!result) {
+      logger.error("Passwords do not match");
+      return res.status(400).json({ error: "Wrong password" });
     }
+
+    const payload = { user: { id: theUser._id.toString() } };
+
+    //Fetch User Details
+    const userName = theUser.firstName || "";
+    const userEmail = theUser.email || "";
+
+    //Sign JWT Token
+    const authtoken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+    logger.info("User logged in succesfully");
+    res.status(200).json({ authtoken, name: userName, email: userEmail });
   } catch (e) {
     logger.error("Login error", e.message);
     return res
@@ -142,27 +127,29 @@ router.put("/update", async (req, res) => {
         .json({ error: "Email not found in the request header" });
     }
 
-    const db = connectToDatabase();
-    const collection = db.collection(users);
-    const existingUser = await collection.findOne({ email });
-    const updatedUser = await collection.findOneandUpdate(
+    const db = await connectToDatabase();
+    const collection = db.collection("users");
+
+    const updateFields = {};
+    if (req.body.name) updateFields.firstName = req.body.name;
+    updateFields.updatedAt = new Date();
+
+    const result = await collection.findOneAndUpdate(
       { email },
-      { $set: existingUser },
-      { ReturnDocument: "after" }
+      { $set: updateFields },
+      { returnDocument: "after" }
     );
 
-    existingUser.firstname = req.body.name;
-    existingUser.updatedAt = new Date();
+    if (!result.value) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-    let payload = {
-      user: {
-        id: updatedUser.toString(),
-      },
-    };
-
-    const authToken = jwt.sign(payload, JWT_SECRET);
-    res.json({ authToken });
+    const updatedUser = result.value;
+    const payload = { user: { id: updatedUser._id.toString() } };
+    const authtoken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+    return res.json({ authtoken });
   } catch (e) {
+    logger.error("Update error", e.message);
     return res.status(500).send("Internal Server Error");
   }
 });
