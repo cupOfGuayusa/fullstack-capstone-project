@@ -51,6 +51,7 @@ const Profile = () => {
       [e.target.name]: e.target.value,
     });
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -58,28 +59,46 @@ const Profile = () => {
       const authtoken = sessionStorage.getItem("auth-token");
       const email = sessionStorage.getItem("email");
 
+      console.log("=== PROFILE UPDATE DEBUG ===");
+      console.log("Auth token:", authtoken ? "exists" : "missing");
+      console.log("Email from sessionStorage:", email);
+      console.log("Updated details:", updatedDetails);
+
       if (!authtoken || !email) {
         navigate("/app/login");
         return;
       }
 
       const payload = { ...updatedDetails };
+      console.log("Payload being sent:", payload);
 
       const response = await fetch(`${urlConfig.backendUrl}/api/auth/update`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${authtoken}`,
           "Content-Type": "application/json",
-          Email: email,
+          email: email,
         },
         body: JSON.stringify(payload),
       });
 
+      console.log("Response status:", response.status);
+
       if (response.ok) {
-        // Update the user details in session storage
-        setUserName(updatedDetails.name);
-        sessionStorage.setItem("name", updatedDetails.name);
-        setUserDetails(updatedDetails);
+        // Parse the response from server
+        const responseData = await response.json();
+        console.log("Response data:", responseData);
+
+        // Update the user details in session storage with server response
+        const serverName = responseData.name || updatedDetails.name;
+        const serverEmail = responseData.email || updatedDetails.email;
+
+        setUserName(serverName);
+        sessionStorage.setItem("name", serverName);
+        sessionStorage.setItem("email", serverEmail);
+        sessionStorage.setItem("auth-token", responseData.authtoken);
+
+        setUserDetails({ name: serverName, email: serverEmail });
         setEditMode(false);
         // Display success message to the user
         setChanged("Name Changed Successfully!");
@@ -89,6 +108,9 @@ const Profile = () => {
         }, 1000);
       } else {
         // Handle error case
+        const errorData = await response.json();
+        console.error("Update failed - Response status:", response.status);
+        console.error("Error details:", errorData);
         throw new Error("Failed to update profile");
       }
     } catch (error) {
