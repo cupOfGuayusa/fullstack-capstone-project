@@ -83,11 +83,14 @@ return (
                 </div>
                 <div className="card-body">
                     <div className="image-placeholder-large">
-                        {gift.image ? (
-                        <img src={gift.img} alt={gift.name} className='product-image-large' />
-                        ) : (
-                            <div className="no-image-available-large">No Image Available</div>
-                        )}
+                        {gift.map((gift) => (
+                            gift.image ? (
+                                <img src={gift.image} alt={gift.name} className='product-image-large' />
+                                ) : (
+                                    <div className="no-image-available-large">No Image Available</div>
+                                )
+                        ))}
+                        
                     </div>
                     
                     	<p><strong>Category:</strong> 
